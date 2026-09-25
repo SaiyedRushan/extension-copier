@@ -1,0 +1,83 @@
+{
+  "extensions": {
+    "settings": {
+      "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa": {
+        "location": 1,
+        "from_webstore": true,
+        "disable_reasons": [],
+        "path": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/1.0_0",
+        "manifest": {
+          "name": "Zeta Tool",
+          "version": "1.0",
+          "icons": {
+            "16": "i16.png",
+            "128": "/i128.png",
+            "256": "i256.png"
+          }
+        }
+      },
+      "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb": {
+        "location": 1,
+        "from_webstore": true,
+        "disable_reasons": [
+          1
+        ],
+        "path": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb/2.0_0",
+        "manifest": {
+          "name": "__MSG_appName__",
+          "default_locale": "en",
+          "version": "2.0",
+          "icons": {
+            "48": "missing.png"
+          }
+        }
+      },
+      "cccccccccccccccccccccccccccccccc": {
+        "location": 1,
+        "from_webstore": true,
+        "path": "cccccccccccccccccccccccccccccccc/3.0_0",
+        "manifest": {
+          "name": "__MSG_missing__",
+          "short_name": "Short C",
+          "default_locale": "en",
+          "version": "3.0"
+        }
+      },
+      "dddddddddddddddddddddddddddddddd": {
+        "location": 4,
+        "path": "/nowhere/unpacked-tool",
+        "manifest": {
+          "name": "Unpacked Tool",
+          "version": "0.1"
+        }
+      },
+      "eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee": {
+        "ack_external": true
+      },
+      "ffffffffffffffffffffffffffffffff": {
+        "location": 5,
+        "from_webstore": false,
+        "manifest": {
+          "name": "Chrome PDF Viewer",
+          "version": "1"
+        }
+      },
+      "hhhhhhhhhhhhhhhhhhhhhhhhhhhhhhhh": {
+        "location": 1,
+        "from_webstore": true,
+        "manifest": {
+          "name": "Old Chrome App",
+          "version": "1",
+          "app": {
+            "launch": {
+              "web_url": "https://example.com"
+            }
+          }
+        }
+      },
+      "gggggggggggggggggggggggggggggggg": {
+        "from_webstore": true
+      }
+    }
+  }
+}

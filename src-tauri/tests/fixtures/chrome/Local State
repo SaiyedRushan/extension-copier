@@ -1,0 +1,10 @@
+{
+  "profile": {
+    "info_cache": {
+      "Profile 1": { "name": "Work", "user_name": "" },
+      "Default": { "name": "Personal", "user_name": "me@example.com" },
+      "Profile 9": { "name": "Deleted", "user_name": "gone@example.com" },
+      "Guest Profile": { "name": "Guest" }
+    }
+  }
+}

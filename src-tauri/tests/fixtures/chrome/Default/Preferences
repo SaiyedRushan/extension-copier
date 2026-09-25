@@ -1,0 +1,10 @@
+{
+  "extensions": {
+    "settings": {
+      "gggggggggggggggggggggggggggggggg": {
+        "location": 1,
+        "manifest": { "name": "Gamma", "version": "4.0" }
+      }
+    }
+  }
+}
