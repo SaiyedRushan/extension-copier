@@ -6,12 +6,12 @@
     <title>Extension Copier: copy Chrome extensions between profiles</title>
     <meta
       name="description"
-      content="A free, open source Mac app that copies your Chrome extensions from one profile to another, and their settings too if you want."
+      content="A free, open source app for Mac, Windows and Linux that copies your Chrome extensions from one profile to another, and their settings too if you want."
     />
     <meta property="og:title" content="Extension Copier" />
     <meta
       property="og:description"
-      content="Copy your Chrome extensions from one profile to another. Free and open source, for Mac."
+      content="Copy your Chrome extensions from one profile to another. Free and open source, for Mac, Windows and Linux."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://saiyedrushan.github.io/extension-copier/" />
@@ -558,6 +558,62 @@
         justify-content: center;
       }
 
+      .installs {
+        max-width: 760px;
+        border-top: 1px solid var(--border);
+      }
+
+      .install-row {
+        display: grid;
+        grid-template-columns: 120px 1fr;
+        gap: 16px;
+        padding: 20px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .install-row h3 {
+        font-size: 18px;
+        margin: 0;
+      }
+
+      .install-row p {
+        margin: 0 0 10px;
+      }
+
+      .install-row p:last-child {
+        margin-bottom: 0;
+      }
+
+      .muted {
+        color: var(--muted);
+      }
+
+      .command {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 8px 8px 14px;
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        background: var(--sunken);
+        max-width: 100%;
+      }
+
+      .command code {
+        flex: 1;
+        min-width: 0;
+        overflow-x: auto;
+        white-space: nowrap;
+        font: 14px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      }
+
+      @media (max-width: 560px) {
+        .install-row {
+          grid-template-columns: 1fr;
+          gap: 6px;
+        }
+      }
+
       footer {
         padding: 32px 0 48px;
         font-size: 14px;
@@ -639,7 +695,7 @@
                 <svg viewBox="0 0 20 20" aria-hidden="true" fill="currentColor">
                   <path d="M10 2a1 1 0 011 1v8.59l2.3-2.3a1 1 0 111.4 1.42l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 111.4-1.42L9 11.6V3a1 1 0 011-1zM4 16a1 1 0 100 2h12a1 1 0 100-2H4z" />
                 </svg>
-                <span id="download-label">Download for Mac</span>
+                <span id="download-label">Download</span>
               </a>
               <a class="button" href="https://github.com/SaiyedRushan/extension-copier">
                 <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
@@ -649,7 +705,8 @@
                 <span class="count" data-stars hidden></span>
               </a>
             </div>
-            <p class="fine" id="download-note">Free and open source. For macOS 12 or later.</p>
+            <p class="fine" id="download-note">Free and open source, for Mac, Windows and Linux.</p>
+            <p class="fine"><a href="#install">All downloads, and installing with Homebrew</a></p>
           </div>
 
           <div
@@ -679,6 +736,56 @@
           </div>
         </div>
 
+        <section id="install">
+          <h2>Install it</h2>
+          <p class="section-lead" id="install-version">Downloads come from the latest release on GitHub.</p>
+          <div class="installs">
+            <div class="install-row">
+              <h3>Mac</h3>
+              <div>
+                <p>
+                  <a data-asset="dmg" href="https://github.com/SaiyedRushan/extension-copier/releases/latest">Download the .dmg</a>, open it and drag Extension Copier into
+                  Applications. It's signed and notarized by Apple, and runs on Apple silicon and Intel Macs with macOS
+                  12 or later.
+                </p>
+                <p>Or install it with Homebrew:</p>
+                <div class="command">
+                  <code id="brew-command">brew install --cask saiyedrushan/tap/extension-copier</code>
+                  <button class="button small" type="button" data-copy="brew-command">Copy</button>
+                </div>
+              </div>
+            </div>
+            <div class="install-row">
+              <h3>Windows</h3>
+              <div>
+                <p>
+                  <a data-asset="exe" href="https://github.com/SaiyedRushan/extension-copier/releases/latest">Download the installer</a> and run it. It works on Windows 10
+                  and 11.
+                </p>
+                <p class="muted">
+                  The installer isn't signed yet, so the first time you run it Windows shows a blue "Windows protected
+                  your PC" screen. Click <strong>More info</strong>, then <strong>Run anyway</strong>.
+                </p>
+              </div>
+            </div>
+            <div class="install-row">
+              <h3>Linux</h3>
+              <div>
+                <p>
+                  <a data-asset="appimage" href="https://github.com/SaiyedRushan/extension-copier/releases/latest">Download the AppImage</a>, or the
+                  <a data-asset="deb" href="https://github.com/SaiyedRushan/extension-copier/releases/latest">.deb</a> for Ubuntu and Debian. It works with Chrome installed
+                  from Google's own package, not the Flatpak version.
+                </p>
+                <p class="muted">
+                  Nobody has tried the Linux version on a real machine yet. If you do,
+                  <a href="https://github.com/SaiyedRushan/extension-copier/issues/new">open an issue</a> and say how it
+                  went.
+                </p>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <section id="how-it-works">
           <h2>How it works</h2>
           <p class="section-lead">
@@ -690,7 +797,7 @@
               <div>
                 <h3>Pick the two profiles</h3>
                 <p>
-                  The app reads your Chrome profiles from your Mac and lists the extensions in each. Anything the other
+                  The app reads your Chrome profiles from your computer and lists the extensions in each. Anything the other
                   profile already has is marked, so you don't add it twice.
                 </p>
               </div>
@@ -763,7 +870,7 @@
               <h2>It doesn't send anything anywhere</h2>
               <p>
                 There's no account and no analytics, and the app doesn't connect to the internet. It reads Chrome's files
-                on your Mac. The only thing it writes into Chrome's folder is a settings copy you start yourself.
+                on your computer. The only thing it writes into Chrome's folder is a settings copy you start yourself.
               </p>
               <p>
                 <a href="https://github.com/SaiyedRushan/extension-copier">All the code is on GitHub</a> if you'd like
@@ -771,11 +878,11 @@
               </p>
             </div>
             <div>
-              <h2>Built for Mac</h2>
+              <h2>Mac, Windows and Linux</h2>
               <p>
-                It's a small native app built with Tauri, for macOS 12 or later. It works with Google Chrome. Brave,
-                Edge and Arc store extensions the same way, so adding them would be a small change if someone wants to
-                take it on.
+                It's a small native app built with Tauri, and it works with Google Chrome on all three. Brave, Edge and
+                Arc store extensions the same way, so adding them would be a small change if someone wants to take it
+                on.
               </p>
             </div>
           </div>
@@ -811,12 +918,19 @@
               </p>
             </details>
             <details>
-              <summary>Does it work on Windows or Linux?</summary>
+              <summary>Why does Windows warn me about the installer?</summary>
               <p>
-                Not yet. Most of the app doesn't care which system it's on, so a Windows version is mostly a matter of
-                finding Chrome's folder there.
-                <a href="https://github.com/SaiyedRushan/extension-copier/issues">Open an issue</a> if you'd like it, or
-                if you want to help build it.
+                Windows warns about any app that isn't signed with a paid certificate, and this free project doesn't
+                have one yet. Click More info, then Run anyway. The installer is built on GitHub from the public source
+                code, and you can see every build on the project's Actions page.
+              </p>
+            </details>
+            <details>
+              <summary>Does it work with Brave, Edge or Arc?</summary>
+              <p>
+                Not yet, only Google Chrome.
+                <a href="https://github.com/SaiyedRushan/extension-copier/issues">Open an issue</a> if you'd like one of
+                them, or if you want to help add it.
               </p>
             </details>
             <details>
@@ -836,7 +950,7 @@
               </p>
               <p>
                 Found a bug or want something added? Open an issue. Pull requests are welcome, and the README explains how
-                to run it on your Mac.
+                to run it on your computer.
               </p>
             </div>
             <div class="actions">
@@ -881,30 +995,82 @@
         })
         .catch(() => {});
 
+      // Which system the visitor is on, to pick the download for the big button.
+      const platform = (() => {
+        const p = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || navigator.userAgent;
+        if (/win/i.test(p)) return "windows";
+        if (/linux|x11/i.test(p) && !/android/i.test(navigator.userAgent)) return "linux";
+        return "mac";
+      })();
+      const systemName = { mac: "Mac", windows: "Windows", linux: "Linux" }[platform];
+      const matchers = {
+        dmg: (name) => name.endsWith(".dmg"),
+        exe: (name) => name.endsWith(".exe"),
+        appimage: (name) => name.endsWith(".AppImage"),
+        deb: (name) => name.endsWith(".deb"),
+      };
+      const primaryKind = { mac: "dmg", windows: "exe", linux: "appimage" }[platform];
+
       fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
         .then((r) => {
-          if (r.status === 404) return { none: true };
+          if (r.status === 404) return { assets: [], none: true };
           return r.ok ? r.json() : null;
         })
         .then((release) => {
           if (!release) return;
+          const assets = release.assets || [];
+          const find = (kind) => assets.find((a) => matchers[kind](a.name));
+          const version = String(release.tag_name || "").replace(/^v/, "");
+          const mb = (asset) => `${Math.max(1, Math.round(asset.size / 1e6))} MB`;
+
+          // The links in the Install section.
+          document.querySelectorAll("[data-asset]").forEach((link) => {
+            const asset = find(link.dataset.asset);
+            if (asset) {
+              link.href = asset.browser_download_url;
+              link.title = `${asset.name}, ${mb(asset)}`;
+            } else {
+              const note = document.createElement("span");
+              note.className = "muted";
+              note.textContent = `${link.textContent} (not in the latest release yet)`;
+              link.replaceWith(note);
+            }
+          });
+          if (version) {
+            document.getElementById("install-version").textContent = `Version ${version}, from the latest release on GitHub.`;
+          }
+
+          // The big button: the right download for this visitor's system.
           const button = document.getElementById("download");
           const label = document.getElementById("download-label");
           const note = document.getElementById("download-note");
-          const dmg = !release.none && (release.assets || []).find((a) => a.name.endsWith(".dmg"));
-          if (dmg) {
-            const version = String(release.tag_name || "").replace(/^v/, "");
-            const size = Math.max(1, Math.round(dmg.size / 1e6));
-            button.href = dmg.browser_download_url;
-            note.textContent = `Version ${version}, ${size} MB. Free and open source, for macOS 12 or later.`;
+          const primary = find(primaryKind);
+          if (primary) {
+            button.href = primary.browser_download_url;
+            label.textContent = `Download for ${systemName}`;
+            note.textContent = `Version ${version}, ${mb(primary)}. Free and open source, for Mac, Windows and Linux.`;
           } else {
-            button.href = `https://github.com/${REPO}#develop`;
-            label.textContent = "No download yet: build it yourself";
-            note.textContent =
-              "The first release isn't out yet. Until it is, you can build the app from the source code on your Mac.";
+            button.href = release.none ? `https://github.com/${REPO}#develop` : "#install";
+            label.textContent = release.none ? "No download yet: build it yourself" : "See all downloads";
+            note.textContent = release.none
+              ? "The first release isn't out yet. Until it is, you can build the app from the source code."
+              : `The latest release doesn't have a ${systemName} download yet.`;
           }
         })
         .catch(() => {});
+
+      document.querySelectorAll("[data-copy]").forEach((button) => {
+        button.addEventListener("click", () => {
+          const text = document.getElementById(button.dataset.copy).textContent;
+          navigator.clipboard.writeText(text).then(
+            () => {
+              button.textContent = "Copied";
+              setTimeout(() => (button.textContent = "Copy"), 1500);
+            },
+            () => {},
+          );
+        });
+      });
     </script>
   </body>
 </html>
