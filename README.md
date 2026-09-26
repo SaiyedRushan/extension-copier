@@ -38,17 +38,22 @@ cd src-tauri && cargo test real_chrome -- --ignored --nocapture
 
 ## Release
 
-Tauri signs the app with your Developer ID certificate and notarizes it when these are set. Without them, `pnpm tauri build` still works and makes an unsigned app, which is fine for trying it yourself.
+`scripts/release.sh` builds one app for both Apple silicon and Intel Macs, signs it with your Developer ID certificate, has Apple notarize it, and packs it into a `.dmg` in `release/`.
+
+One-time setup: make an app-specific password at account.apple.com, then save it in your keychain (it asks for the password):
 
 ```sh
-export APPLE_SIGNING_IDENTITY="Developer ID Application: Your Name (TEAMID)"
-export APPLE_ID="you@example.com"
-export APPLE_PASSWORD="app-specific password from appleid.apple.com"
-export APPLE_TEAM_ID="TEAMID"
-pnpm tauri build
+xcrun notarytool store-credentials extension-copier --apple-id YOUR_APPLE_ID --team-id YOUR_TEAM_ID
 ```
 
-The `.dmg` ends up in `src-tauri/target/release/bundle/dmg/`. It can't go on the Mac App Store: the App Store sandbox won't let an app read Chrome's profile folder.
+Each release:
+
+```sh
+APPLE_SIGNING_IDENTITY="Developer ID Application: Your Name (TEAMID)" scripts/release.sh
+gh release create v0.1.0 release/Extension-Copier-0.1.0.dmg
+```
+
+Without a certificate, `pnpm tauri build` still makes an unsigned app, which is fine for trying it on your own Mac. It can't go on the Mac App Store: the App Store sandbox won't let an app read Chrome's profile folder.
 
 ## License
 
