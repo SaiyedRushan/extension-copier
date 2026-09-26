@@ -20,6 +20,8 @@ export type Session = {
   added: string[];
   /** Ones the user said they don't want any more. Older saves don't have this. */
   skipped: string[];
+  /** Set after copying settings, for undoing that copy. */
+  settingsBackupId?: string;
 };
 
 type HistoryFile = { version: 1; sessions: Session[] };
@@ -109,7 +111,8 @@ function isSession(value: unknown): value is Session {
     s.items.every((i) => typeof i?.id === "string" && typeof i?.name === "string") &&
     Array.isArray(s.added) &&
     s.added.every((id) => typeof id === "string") &&
-    (s.skipped === undefined || (Array.isArray(s.skipped) && s.skipped.every((id) => typeof id === "string")))
+    (s.skipped === undefined || (Array.isArray(s.skipped) && s.skipped.every((id) => typeof id === "string"))) &&
+    (s.settingsBackupId === undefined || typeof s.settingsBackupId === "string")
   );
 }
 

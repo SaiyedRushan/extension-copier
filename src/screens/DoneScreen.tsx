@@ -4,9 +4,15 @@ import { ExtensionIcon } from "../ExtensionIcon";
 import { notAdded, notWanted, wantedCount, type FlowState } from "../installFlow";
 import { plural } from "../messages";
 
-type Props = { target: Profile; result: FlowState; onRestart: () => void; onShowHistory: () => void };
+type Props = {
+  target: Profile;
+  result: FlowState;
+  onRestart: () => void;
+  onShowHistory: () => void;
+  onCopySettings: () => void;
+};
 
-export function DoneScreen({ target, result, onRestart, onShowHistory }: Props) {
+export function DoneScreen({ target, result, onRestart, onShowHistory, onCopySettings }: Props) {
   const missing = notAdded(result);
   const skipped = notWanted(result);
   const wanted = wantedCount(result);
@@ -52,6 +58,17 @@ export function DoneScreen({ target, result, onRestart, onShowHistory }: Props) 
               </li>
             ))}
           </ul>
+        </section>
+      )}
+
+      {result.added.length > 0 && (
+        <section className="card">
+          <h2>Copy their settings too?</h2>
+          <p>
+            The extensions were added fresh, without the settings you had for them before. The next screen lets you pick
+            which ones get their settings copied. Chrome has to be closed for that.
+          </p>
+          <button onClick={onCopySettings}>Choose which settings to copy</button>
         </section>
       )}
 

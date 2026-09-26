@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { api } from "../api";
 import { removeSession, saveSession } from "../history";
 import { entryWithSkip, loadHistoryEntries, type HistoryEntry } from "../historyEntries";
 import { addRestLabel, loadErrorMessage, plural, startedOn } from "../messages";
@@ -6,13 +7,15 @@ import { addRestLabel, loadErrorMessage, plural, startedOn } from "../messages";
 type Props = {
   onBack: () => void;
   onResume: (entry: HistoryEntry) => void;
+  onCopySettings: (entry: HistoryEntry) => void;
 };
 
 type Load = { status: "loading" } | { status: "error"; message: string } | { status: "ready"; entries: HistoryEntry[] };
 
-export function HistoryScreen({ onBack, onResume }: Props) {
+export function HistoryScreen({ onBack, onResume, onCopySettings }: Props) {
   const [load, setLoad] = useState<Load>({ status: "loading" });
   const [saveFailed, setSaveFailed] = useState(false);
+  const [undoMessage, setUndoMessage] = useState<{ id: string; text: string; error: boolean } | null>(null);
 
   const reload = useCallback(async () => {
     setLoad({ status: "loading" });
@@ -36,6 +39,26 @@ export function HistoryScreen({ onBack, onResume }: Props) {
       );
     } catch {
       setSaveFailed(true);
+    }
+  }
+
+  async function undoSettings(entry: HistoryEntry) {
+    const backupId = entry.session.settingsBackupId;
+    if (!backupId) return;
+    setUndoMessage(null);
+    try {
+      await api.undoSettingsCopy(backupId);
+      const session = { ...entry.session, settingsBackupId: undefined };
+      await saveSession(session).catch(() => {});
+      setLoad((prev) =>
+        prev.status === "ready"
+          ? { ...prev, entries: prev.entries.map((e) => (e.session.id === session.id ? { ...e, session } : e)) }
+          : prev,
+      );
+      const toName = entry.target?.name ?? entry.session.to.name;
+      setUndoMessage({ id: session.id, text: `Put back the settings ${toName} had before.`, error: false });
+    } catch (error) {
+      setUndoMessage({ id: entry.session.id, text: loadErrorMessage(error), error: true });
     }
   }
 
@@ -75,7 +98,16 @@ export function HistoryScreen({ onBack, onResume }: Props) {
 
       {load.status === "ready" &&
         load.entries.map((entry) => (
-          <HistoryCard key={entry.session.id} entry={entry} onResume={onResume} onRemove={remove} onSkip={setSkip} />
+          <HistoryCard
+            key={entry.session.id}
+            entry={entry}
+            onResume={onResume}
+            onRemove={remove}
+            onSkip={setSkip}
+            onCopySettings={onCopySettings}
+            onUndoSettings={undoSettings}
+            undoMessage={undoMessage?.id === entry.session.id ? undoMessage : null}
+          />
         ))}
     </main>
   );
@@ -86,11 +118,17 @@ function HistoryCard({
   onResume,
   onRemove,
   onSkip,
+  onCopySettings,
+  onUndoSettings,
+  undoMessage,
 }: {
   entry: HistoryEntry;
   onResume: (entry: HistoryEntry) => void;
   onRemove: (id: string) => void;
   onSkip: (entry: HistoryEntry, id: string, skip: boolean) => void;
+  onCopySettings: (entry: HistoryEntry) => void;
+  onUndoSettings: (entry: HistoryEntry) => void;
+  undoMessage: { text: string; error: boolean } | null;
 }) {
   const { session, target, checked, added, skipped, remaining } = entry;
   const total = session.items.length;
@@ -155,8 +193,15 @@ function HistoryCard({
             {addRestLabel(remaining.length, wanted, toName)}
           </button>
         )}
+        {target && added.length > 0 && (
+          <button onClick={() => onCopySettings(entry)}>Copy their settings</button>
+        )}
+        {target && session.settingsBackupId && (
+          <button onClick={() => onUndoSettings(entry)}>Undo the settings copy</button>
+        )}
         <button onClick={() => onRemove(session.id)}>Remove from history</button>
       </div>
+      {undoMessage && <p className={undoMessage.error ? "error" : "muted"}>{undoMessage.text}</p>}
     </section>
   );
 }

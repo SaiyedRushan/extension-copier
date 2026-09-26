@@ -6,7 +6,9 @@ Pick the profile to copy from, the profile to copy to, and tick the extensions y
 
 Every list you start is saved in the app's history (`~/Library/Application Support/com.rushanshah.extensioncopier/history.json`), with its progress checked against the target profile each time you look. Close the app halfway and the first screen offers to add the rest.
 
-It reads Chrome's profile files and never writes to them. Extension settings and saved data aren't copied. Extensions that didn't come from the Web Store (ones loaded from a folder in Developer mode) are listed but can't be copied, because there's no store page to add them from.
+Once extensions are installed, you can also copy their settings and saved data (your Dark Reader site list, your Tampermonkey scripts). Chrome has to be closed for that. The app copies each extension's own data folders into the target profile and moves whatever the target had for them into a backup first, so the copy can be undone. Chrome's signed preference files are never written, so site access you granted and Incognito settings stay behind, as does anything an extension keeps in the storage Chrome shares between sites.
+
+Apart from that settings copy, the app only reads Chrome's files. Extensions that didn't come from the Web Store (ones loaded from a folder in Developer mode) are listed but can't be copied, because there's no store page to add them from.
 
 ## Develop
 

@@ -5,6 +5,7 @@ pub mod extensions;
 pub mod launch;
 pub mod locale;
 pub mod profiles;
+pub mod settings;
 
 use serde::Serialize;
 use std::path::PathBuf;
@@ -28,6 +29,12 @@ pub enum AppError {
     LaunchFailed,
     /// The app's own history file couldn't be read or saved.
     HistoryFailed,
+    /// Chrome is open, and it has to be closed before settings can be copied.
+    ChromeRunning,
+    /// Copying settings (or undoing a copy) failed partway.
+    SettingsCopyFailed,
+    /// The backup to undo from doesn't exist any more.
+    BackupNotFound,
 }
 
 /// Chrome's user data folder for the current user.

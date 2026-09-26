@@ -33,6 +33,12 @@ export function loadErrorMessage(error: unknown, profiles: Profile[] = []): stri
       return "Couldn't open Chrome. Open Chrome yourself, then press Check again.";
     case "historyFailed":
       return "Couldn't read your history. Press Check again.";
+    case "chromeRunning":
+      return "Chrome is still open. Quit Chrome (press ⌘Q while it's in front), then try again.";
+    case "settingsCopyFailed":
+      return "Couldn't finish copying the settings. Anything that didn't copy was put back as it was. Try again.";
+    case "backupNotFound":
+      return "The old settings to put back aren't there any more, so this can't be undone.";
   }
 }
 

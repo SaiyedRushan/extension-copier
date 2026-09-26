@@ -18,6 +18,22 @@ export type Extension = {
   copyable: boolean;
 };
 
+export type SettingsPreview = {
+  id: string;
+  /** The source profile has saved settings for it that can be copied. */
+  hasData: boolean;
+  /** Some of its data is in storage Chrome shares between sites, which stays behind. */
+  partial: boolean;
+};
+
+export type CopyResult = {
+  /** Pass to undoSettingsCopy to put the target's old settings back. */
+  backupId: string;
+  copied: string[];
+  /** These failed, and their old settings in the target were put back. */
+  failed: string[];
+};
+
 /** Mirrors `AppError` in src-tauri/src/chrome/mod.rs. */
 export type AppError =
   | { kind: "chromeNotFound" }
@@ -26,7 +42,10 @@ export type AppError =
   | { kind: "prefsUnreadable"; profile: string }
   | { kind: "badExtensionId" }
   | { kind: "launchFailed" }
-  | { kind: "historyFailed" };
+  | { kind: "historyFailed" }
+  | { kind: "chromeRunning" }
+  | { kind: "settingsCopyFailed" }
+  | { kind: "backupNotFound" };
 
 export function isAppError(value: unknown): value is AppError {
   return typeof value === "object" && value !== null && "kind" in value;
@@ -43,4 +62,10 @@ export const api = {
   /** The saved history file's text, or null if nothing has been saved yet. */
   readHistory: () => invoke<string | null>("read_history"),
   writeHistory: (json: string) => invoke<void>("write_history", { json }),
+  chromeRunning: () => invoke<boolean>("chrome_running"),
+  settingsPreview: (fromDir: string, extensionIds: string[]) =>
+    invoke<SettingsPreview[]>("settings_preview", { fromDir, extensionIds }),
+  copySettings: (fromDir: string, toDir: string, extensionIds: string[]) =>
+    invoke<CopyResult>("copy_settings", { fromDir, toDir, extensionIds }),
+  undoSettingsCopy: (backupId: string) => invoke<void>("undo_settings_copy", { backupId }),
 };

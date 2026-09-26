@@ -93,6 +93,13 @@ describe("history", () => {
     expect(withSkip(s, "a", false).skipped).toEqual(["c"]);
   });
 
+  it("keeps the settings backup id, and drops a malformed one", () => {
+    const withBackup = { ...session("2026-09-24T10:00:00Z"), settingsBackupId: "1790000000000" };
+    expect(parseHistory(serializeHistory([withBackup]))[0].settingsBackupId).toBe("1790000000000");
+    const bad = JSON.stringify({ version: 1, sessions: [{ ...withBackup, settingsBackupId: 5 }] });
+    expect(parseHistory(bad)).toEqual([]);
+  });
+
   it("falls back to the saved progress when the target can't be read", () => {
     const s = { ...session("2026-09-24T10:00:00Z"), added: ["a"] };
     expect(sessionProgress(s, null).remaining.map((i) => i.id)).toEqual(["b", "c"]);

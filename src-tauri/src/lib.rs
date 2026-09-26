@@ -3,6 +3,7 @@ mod history;
 
 use chrome::extensions::{self, Extension};
 use chrome::profiles::{self, Profile};
+use chrome::settings::{self, CopyResult, SettingsPreview};
 use chrome::{launch, AppError};
 use std::path::PathBuf;
 use tauri::Manager;
@@ -86,6 +87,66 @@ async fn write_history(app: tauri::AppHandle, json: String) -> Result<(), AppErr
     history::write(&history_dir(&app)?, &json).map_err(|_| AppError::HistoryFailed)
 }
 
+fn backups_dir(app: &tauri::AppHandle) -> Result<PathBuf, AppError> {
+    Ok(history_dir(app)?.join("settings-backups"))
+}
+
+fn check_ids(ids: &[String]) -> Result<(), AppError> {
+    if ids.iter().all(|id| chrome::is_extension_id(id)) {
+        Ok(())
+    } else {
+        Err(AppError::BadExtensionId)
+    }
+}
+
+#[tauri::command]
+async fn chrome_running() -> Result<bool, AppError> {
+    Ok(settings::chrome_running(&data_dir()?))
+}
+
+#[tauri::command]
+async fn settings_preview(
+    from_dir: String,
+    extension_ids: Vec<String>,
+) -> Result<Vec<SettingsPreview>, AppError> {
+    check_ids(&extension_ids)?;
+    let data_dir = data_dir()?;
+    known_profile(&data_dir, &from_dir)?;
+    Ok(settings::preview(&data_dir, &from_dir, &extension_ids))
+}
+
+#[tauri::command]
+async fn copy_settings(
+    app: tauri::AppHandle,
+    from_dir: String,
+    to_dir: String,
+    extension_ids: Vec<String>,
+) -> Result<CopyResult, AppError> {
+    check_ids(&extension_ids)?;
+    if from_dir == to_dir {
+        return Err(AppError::ProfileNotFound);
+    }
+    let data_dir = data_dir()?;
+    known_profile(&data_dir, &from_dir)?;
+    known_profile(&data_dir, &to_dir)?;
+    settings::copy(
+        &data_dir,
+        &from_dir,
+        &to_dir,
+        &extension_ids,
+        &backups_dir(&app)?,
+    )
+}
+
+#[tauri::command]
+async fn undo_settings_copy(app: tauri::AppHandle, backup_id: String) -> Result<(), AppError> {
+    let data_dir = data_dir()?;
+    let backups = backups_dir(&app)?;
+    let to = settings::backup_target(&backups, &backup_id).ok_or(AppError::BackupNotFound)?;
+    known_profile(&data_dir, &to)?;
+    settings::undo(&data_dir, &backups, &backup_id)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -96,7 +157,11 @@ pub fn run() {
             installed_ids,
             open_store_pages,
             read_history,
-            write_history
+            write_history,
+            chrome_running,
+            settings_preview,
+            copy_settings,
+            undo_settings_copy
         ])
         .run(tauri::generate_context!())
         .expect("error while running Extension Copier");
