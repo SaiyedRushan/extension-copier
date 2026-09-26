@@ -2,6 +2,8 @@
 
 A Mac app that copies your Chrome extensions from one profile to another.
 
+Website: https://saiyedrushan.github.io/extension-copier/
+
 Pick the profile to copy from, the profile to copy to, and tick the extensions you want. The app opens each extension's Chrome Web Store page in the target profile. You click Add to Chrome, and the app notices and opens the next one. Or open every page at once as tabs and work through them in any order. Extensions installed this way update themselves like any other.
 
 Every list you start is saved in the app's history (`~/Library/Application Support/com.rushanshah.extensioncopier/history.json`), with its progress checked against the target profile each time you look. Close the app halfway and the first screen offers to add the rest.

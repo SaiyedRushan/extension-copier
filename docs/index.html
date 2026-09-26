@@ -1,0 +1,910 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Extension Copier: copy Chrome extensions between profiles</title>
+    <meta
+      name="description"
+      content="A free, open source Mac app that copies your Chrome extensions from one profile to another, and their settings too if you want."
+    />
+    <meta property="og:title" content="Extension Copier" />
+    <meta
+      property="og:description"
+      content="Copy your Chrome extensions from one profile to another. Free and open source, for Mac."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://saiyedrushan.github.io/extension-copier/" />
+    <meta property="og:image" content="https://saiyedrushan.github.io/extension-copier/icon.png" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="icon" type="image/png" href="icon.png" />
+    <link rel="apple-touch-icon" href="icon.png" />
+    <style>
+      :root {
+        --bg: #fbfbfc;
+        --surface: #ffffff;
+        --sunken: #f1f3f6;
+        --border: #dfe3e8;
+        --text: #16191d;
+        --muted: #59626d;
+        --accent: #1f6feb;
+        --accent-hover: #1a5fcc;
+        --accent-text: #ffffff;
+        --done: #1a7f37;
+        --window: #ffffff;
+        --shadow: 0 1px 2px rgba(20, 30, 50, 0.06), 0 12px 40px rgba(20, 30, 50, 0.1);
+        color-scheme: light;
+      }
+
+      @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+          --bg: #141518;
+          --surface: #1c1e22;
+          --sunken: #23262b;
+          --border: #33373d;
+          --text: #e9ebee;
+          --muted: #a2a9b1;
+          --accent: #4c8dff;
+          --accent-hover: #6a9fff;
+          --accent-text: #ffffff;
+          --done: #4ac26b;
+          --window: #1f2125;
+          --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 40px rgba(0, 0, 0, 0.45);
+          color-scheme: dark;
+        }
+      }
+
+      :root[data-theme="dark"] {
+        --bg: #141518;
+        --surface: #1c1e22;
+        --sunken: #23262b;
+        --border: #33373d;
+        --text: #e9ebee;
+        --muted: #a2a9b1;
+        --accent: #4c8dff;
+        --accent-hover: #6a9fff;
+        --accent-text: #ffffff;
+        --done: #4ac26b;
+        --window: #1f2125;
+        --shadow: 0 1px 2px rgba(0, 0, 0, 0.3), 0 12px 40px rgba(0, 0, 0, 0.45);
+        color-scheme: dark;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      a {
+        color: var(--accent);
+      }
+
+      .wrap {
+        max-width: 1040px;
+        margin: 0 auto;
+        padding: 0 16px;
+      }
+
+      /* Header */
+      .site-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        padding: 18px 0;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 650;
+        color: var(--text);
+        text-decoration: none;
+      }
+
+      .brand img {
+        width: 32px;
+        height: 32px;
+      }
+
+      .site-header nav {
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        font-size: 15px;
+      }
+
+      .site-header nav a {
+        color: var(--muted);
+        text-decoration: none;
+      }
+
+      .site-header nav a:hover {
+        color: var(--text);
+      }
+
+      /* Buttons */
+      .button {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 11px 20px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        background: var(--surface);
+        color: var(--text);
+        font: inherit;
+        font-size: 16px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+      }
+
+      .button:hover {
+        border-color: var(--muted);
+      }
+
+      .button.primary {
+        background: var(--accent);
+        border-color: var(--accent);
+        color: var(--accent-text);
+      }
+
+      .button.primary:hover {
+        background: var(--accent-hover);
+        border-color: var(--accent-hover);
+      }
+
+      .button.small {
+        padding: 6px 12px;
+        font-size: 14px;
+        border-radius: 8px;
+      }
+
+      .button svg {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+      }
+
+      .count {
+        padding-left: 8px;
+        margin-left: 2px;
+        border-left: 1px solid var(--border);
+        font-variant-numeric: tabular-nums;
+      }
+
+      .button.primary .count {
+        border-left-color: rgba(255, 255, 255, 0.4);
+      }
+
+      a:focus-visible,
+      .button:focus-visible,
+      summary:focus-visible {
+        outline: 2px solid var(--accent);
+        outline-offset: 3px;
+      }
+
+      /* Intro */
+      .intro {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+        gap: 48px;
+        align-items: center;
+        padding: 48px 0 72px;
+      }
+
+      h1 {
+        font-size: clamp(32px, 5vw, 46px);
+        line-height: 1.12;
+        letter-spacing: -0.02em;
+        margin: 0 0 18px;
+      }
+
+      .lead {
+        font-size: 19px;
+        color: var(--muted);
+        margin: 0 0 28px;
+      }
+
+      .actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 12px;
+      }
+
+      .fine {
+        font-size: 14px;
+        color: var(--muted);
+        margin: 0;
+      }
+
+      /* App window mock-up, drawn to match the real app's first screen */
+      .window {
+        background: var(--window);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        box-shadow: var(--shadow);
+        overflow: hidden;
+        font-size: 13px;
+        line-height: 1.4;
+      }
+
+      .titlebar {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        padding: 10px 12px;
+        background: var(--sunken);
+        border-bottom: 1px solid var(--border);
+      }
+
+      .titlebar span {
+        width: 11px;
+        height: 11px;
+        border-radius: 50%;
+        background: #ff5f57;
+      }
+
+      .titlebar span:nth-child(2) {
+        background: #febc2e;
+      }
+
+      .titlebar span:nth-child(3) {
+        background: #28c840;
+      }
+
+      .titlebar b {
+        flex: 1;
+        text-align: center;
+        font-weight: 600;
+        color: var(--muted);
+        margin-right: 40px;
+      }
+
+      .window-body {
+        padding: 16px;
+      }
+
+      .window-body h3 {
+        font-size: 15px;
+        margin: 0 0 12px;
+      }
+
+      .mock-pickers {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 10px;
+        margin-bottom: 14px;
+      }
+
+      .mock-pickers div {
+        font-weight: 600;
+        font-size: 12px;
+      }
+
+      .mock-select {
+        margin-top: 4px;
+        padding: 6px 8px;
+        border: 1px solid var(--border);
+        border-radius: 7px;
+        background: var(--sunken);
+        font-weight: 400;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .mock-list {
+        list-style: none;
+        margin: 0 0 14px;
+        padding: 0;
+        border: 1px solid var(--border);
+        border-radius: 9px;
+      }
+
+      .mock-list li {
+        display: flex;
+        align-items: center;
+        gap: 9px;
+        padding: 7px 10px;
+      }
+
+      .mock-list li + li {
+        border-top: 1px solid var(--border);
+      }
+
+      .mock-list li.off {
+        color: var(--muted);
+      }
+
+      .tick {
+        width: 14px;
+        height: 14px;
+        border-radius: 4px;
+        background: var(--accent);
+        flex-shrink: 0;
+        position: relative;
+      }
+
+      .tick::after {
+        content: "";
+        position: absolute;
+        left: 4.5px;
+        top: 1.5px;
+        width: 3px;
+        height: 7px;
+        border: solid #fff;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+      }
+
+      .off .tick {
+        background: var(--border);
+      }
+
+      .off .tick::after {
+        display: none;
+      }
+
+      .tile {
+        width: 20px;
+        height: 20px;
+        border-radius: 5px;
+        flex-shrink: 0;
+        display: grid;
+        place-items: center;
+        font-size: 11px;
+        font-weight: 700;
+        color: #fff;
+      }
+
+      .mock-list .name {
+        flex: 1;
+        min-width: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+
+      .badge {
+        font-size: 11px;
+        padding: 1px 7px;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        color: var(--muted);
+        white-space: nowrap;
+      }
+
+      .mock-footer {
+        text-align: center;
+      }
+
+      .mock-footer p {
+        font-size: 12px;
+        color: var(--muted);
+        margin: 0 0 8px;
+      }
+
+      .mock-button {
+        display: inline-block;
+        padding: 7px 14px;
+        border-radius: 8px;
+        background: var(--accent);
+        color: #fff;
+        font-weight: 600;
+      }
+
+      /* Sections */
+      section {
+        padding: 56px 0;
+        border-top: 1px solid var(--border);
+      }
+
+      h2 {
+        font-size: 28px;
+        letter-spacing: -0.01em;
+        line-height: 1.2;
+        margin: 0 0 12px;
+      }
+
+      .section-lead {
+        color: var(--muted);
+        max-width: 640px;
+        margin: 0 0 32px;
+      }
+
+      .steps {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+        display: grid;
+        gap: 28px;
+        max-width: 720px;
+        counter-reset: step;
+      }
+
+      .steps li {
+        display: grid;
+        grid-template-columns: 44px 1fr;
+        gap: 16px;
+        counter-increment: step;
+      }
+
+      .steps li::before {
+        content: counter(step);
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        border: 1.5px solid var(--accent);
+        color: var(--accent);
+        display: grid;
+        place-items: center;
+        font-weight: 700;
+      }
+
+      .steps h3 {
+        font-size: 18px;
+        margin: 4px 0 4px;
+      }
+
+      .steps p {
+        margin: 0;
+        color: var(--muted);
+      }
+
+      .two-up {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 40px;
+      }
+
+      .two-up h2 {
+        font-size: 24px;
+      }
+
+      .plain-list {
+        margin: 0;
+        padding-left: 20px;
+        color: var(--muted);
+      }
+
+      .plain-list li + li {
+        margin-top: 10px;
+      }
+
+      .two-up p {
+        color: var(--muted);
+        margin: 0 0 14px;
+      }
+
+      /* FAQ */
+      .faq {
+        max-width: 720px;
+      }
+
+      .faq details {
+        border-bottom: 1px solid var(--border);
+        padding: 14px 0;
+      }
+
+      .faq summary {
+        cursor: pointer;
+        font-weight: 600;
+        list-style: none;
+        display: flex;
+        justify-content: space-between;
+        gap: 16px;
+      }
+
+      .faq summary::-webkit-details-marker {
+        display: none;
+      }
+
+      .faq summary::after {
+        content: "+";
+        color: var(--muted);
+        font-weight: 400;
+        font-size: 20px;
+        line-height: 1;
+      }
+
+      .faq details[open] summary::after {
+        content: "\2212";
+      }
+
+      .faq details p {
+        color: var(--muted);
+        margin: 10px 0 0;
+      }
+
+      /* Help */
+      .help {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 32px;
+        display: grid;
+        grid-template-columns: 1.3fr 1fr;
+        gap: 32px;
+        align-items: center;
+      }
+
+      .help p {
+        color: var(--muted);
+        margin: 0 0 12px;
+      }
+
+      .help .actions {
+        flex-direction: column;
+        align-items: stretch;
+        margin: 0;
+      }
+
+      .help .button {
+        justify-content: center;
+      }
+
+      footer {
+        padding: 32px 0 48px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      footer p {
+        margin: 0 0 6px;
+      }
+
+      [hidden] {
+        display: none !important;
+      }
+
+      @media (max-width: 820px) {
+        .intro,
+        .two-up,
+        .help {
+          grid-template-columns: 1fr;
+        }
+
+        .intro {
+          padding-top: 24px;
+          gap: 36px;
+        }
+
+        .site-header nav a:not(.button) {
+          display: none;
+        }
+
+        .help {
+          padding: 24px;
+        }
+      }
+
+      @media (max-width: 420px) {
+        .mock-pickers {
+          grid-template-columns: 1fr;
+        }
+
+        .mock-list .badge {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <header class="site-header">
+        <a class="brand" href="./">
+          <img src="icon.png" alt="" width="32" height="32" />
+          Extension Copier
+        </a>
+        <nav>
+          <a href="#how-it-works">How it works</a>
+          <a href="#faq">Questions</a>
+          <a class="button small" href="https://github.com/SaiyedRushan/extension-copier">
+            <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
+              <path
+                d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"
+              />
+            </svg>
+            GitHub
+          </a>
+        </nav>
+      </header>
+
+      <main>
+        <div class="intro">
+          <div>
+            <h1>Copy your Chrome extensions from one profile to another</h1>
+            <p class="lead">
+              Pick the profile you're copying from, tick the extensions you want, and the app opens each one's Chrome
+              Web Store page in the other profile. You click Add to Chrome. It keeps track of what's done, so you can
+              stop halfway and finish later.
+            </p>
+            <div class="actions">
+              <a class="button primary" id="download" href="https://github.com/SaiyedRushan/extension-copier/releases/latest">
+                <svg viewBox="0 0 20 20" aria-hidden="true" fill="currentColor">
+                  <path d="M10 2a1 1 0 011 1v8.59l2.3-2.3a1 1 0 111.4 1.42l-4 4a1 1 0 01-1.4 0l-4-4a1 1 0 111.4-1.42L9 11.6V3a1 1 0 011-1zM4 16a1 1 0 100 2h12a1 1 0 100-2H4z" />
+                </svg>
+                <span id="download-label">Download for Mac</span>
+              </a>
+              <a class="button" href="https://github.com/SaiyedRushan/extension-copier">
+                <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
+                  <path d="M8 .25a.75.75 0 01.67.42l1.88 3.8 4.2.61a.75.75 0 01.41 1.28l-3.04 2.96.72 4.18a.75.75 0 01-1.09.79L8 12.32l-3.75 1.97a.75.75 0 01-1.09-.79l.72-4.18L.84 6.36a.75.75 0 01.41-1.28l4.2-.61L7.33.67A.75.75 0 018 .25z" />
+                </svg>
+                Star on GitHub
+                <span class="count" data-stars hidden></span>
+              </a>
+            </div>
+            <p class="fine" id="download-note">Free and open source. For macOS 12 or later.</p>
+          </div>
+
+          <div
+            class="window"
+            role="img"
+            aria-label="The app's first screen: copy from a Personal profile to a Work profile, with four extensions ticked and one already in Work."
+          >
+            <div class="titlebar" aria-hidden="true"><span></span><span></span><span></span><b>Extension Copier</b></div>
+            <div class="window-body" aria-hidden="true">
+              <h3>Copy extensions to another Chrome profile</h3>
+              <div class="mock-pickers">
+                <div>Copy from<div class="mock-select">Personal (you@gmail.com), 9 extensions</div></div>
+                <div>Copy to<div class="mock-select">Work (you@company.com)</div></div>
+              </div>
+              <ul class="mock-list">
+                <li><span class="tick"></span><span class="tile" style="background: #3b3f46">D</span><span class="name">Dark Reader</span></li>
+                <li><span class="tick"></span><span class="tile" style="background: #2e7d32">T</span><span class="name">Tampermonkey</span></li>
+                <li class="off"><span class="tick"></span><span class="tile" style="background: #8e2424">u</span><span class="name">uBlock Origin Lite</span><span class="badge">Already in Work</span></li>
+                <li><span class="tick"></span><span class="tile" style="background: #1565c0">G</span><span class="name">Google Dictionary</span></li>
+                <li><span class="tick"></span><span class="tile" style="background: #e65100">K</span><span class="name">Keepa</span><span class="badge">Turned off in Personal</span></li>
+              </ul>
+              <div class="mock-footer">
+                <p>Chrome will open each extension's store page in Work's window.</p>
+                <span class="mock-button">Add 4 extensions to Work</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <section id="how-it-works">
+          <h2>How it works</h2>
+          <p class="section-lead">
+            Chrome keeps every profile separate, so there's no built-in way to move extensions between them. Most people
+            end up searching the store for each one again. This does the searching for you.
+          </p>
+          <ol class="steps">
+            <li>
+              <div>
+                <h3>Pick the two profiles</h3>
+                <p>
+                  The app reads your Chrome profiles from your Mac and lists the extensions in each. Anything the other
+                  profile already has is marked, so you don't add it twice.
+                </p>
+              </div>
+            </li>
+            <li>
+              <div>
+                <h3>Tick the extensions you want</h3>
+                <p>Everything starts ticked. Untick what you don't need in the new profile.</p>
+              </div>
+            </li>
+            <li>
+              <div>
+                <h3>Click Add to Chrome on each page</h3>
+                <p>
+                  Chrome opens each extension's store page in the right profile, one at a time or all at once as tabs.
+                  The app notices each install within about 10 seconds and opens the next. Close it halfway and it
+                  offers to finish the list next time you open it.
+                </p>
+              </div>
+            </li>
+            <li>
+              <div>
+                <h3>Copy their settings too, if you want</h3>
+                <p>
+                  With Chrome closed, the app can copy what each extension has saved, like your Dark Reader site list or
+                  your Tampermonkey scripts. It keeps a backup of anything it replaces, and there's an Undo button.
+                </p>
+              </div>
+            </li>
+          </ol>
+        </section>
+
+        <section>
+          <div class="two-up">
+            <div>
+              <h2>Why you still click Add to Chrome</h2>
+              <p>
+                Chrome only installs extensions from the Chrome Web Store, and only when you say so. The one way around
+                that is editing Chrome's signed settings file, which is what malware does. Chrome notices and turns the
+                extensions off.
+              </p>
+              <p>
+                Going through the store also means your extensions keep updating themselves, the same as if you'd added
+                them by hand.
+              </p>
+            </div>
+            <div>
+              <h2>What it can't copy</h2>
+              <ul class="plain-list">
+                <li>
+                  Extensions that aren't on the Chrome Web Store, like ones you loaded from a folder in Developer mode.
+                  The app lists them, but there's no store page to add them from.
+                </li>
+                <li>
+                  Site access you gave an extension, and whether it's allowed in Incognito. Chrome keeps those in its
+                  signed settings file.
+                </li>
+                <li>
+                  Data some extensions keep in storage Chrome shares between all sites. The app marks these as "Only
+                  partly", and you may need to sign in to them again.
+                </li>
+              </ul>
+            </div>
+          </div>
+        </section>
+
+        <section>
+          <div class="two-up">
+            <div>
+              <h2>It doesn't send anything anywhere</h2>
+              <p>
+                There's no account and no analytics, and the app doesn't connect to the internet. It reads Chrome's files
+                on your Mac. The only thing it writes into Chrome's folder is a settings copy you start yourself.
+              </p>
+              <p>
+                <a href="https://github.com/SaiyedRushan/extension-copier">All the code is on GitHub</a> if you'd like
+                to check.
+              </p>
+            </div>
+            <div>
+              <h2>Built for Mac</h2>
+              <p>
+                It's a small native app built with Tauri, for macOS 12 or later. It works with Google Chrome. Brave,
+                Edge and Arc store extensions the same way, so adding them would be a small change if someone wants to
+                take it on.
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section id="faq">
+          <h2>Questions</h2>
+          <div class="faq">
+            <details>
+              <summary>Is it free?</summary>
+              <p>Yes. It's open source under the MIT license, and there's nothing to pay for.</p>
+            </details>
+            <details>
+              <summary>Doesn't Chrome sync already do this?</summary>
+              <p>
+                Only between profiles signed in to the same Google account with sync turned on. This is for profiles on
+                different accounts, like work and personal, or profiles with no account at all.
+              </p>
+            </details>
+            <details>
+              <summary>Do I need to be signed in to Chrome?</summary>
+              <p>No. Adding extensions from the Chrome Web Store works in any profile, signed in or not.</p>
+            </details>
+            <details>
+              <summary>What happens to the profile I copy from?</summary>
+              <p>Nothing. The app only reads it.</p>
+            </details>
+            <details>
+              <summary>Can I undo a settings copy?</summary>
+              <p>
+                Yes. Before copying, the app moves whatever the other profile had for those extensions into a backup.
+                Undo puts it back. You can undo from the screen you copied on, or later from your history in the app.
+              </p>
+            </details>
+            <details>
+              <summary>Does it work on Windows or Linux?</summary>
+              <p>
+                Not yet. Most of the app doesn't care which system it's on, so a Windows version is mostly a matter of
+                finding Chrome's folder there.
+                <a href="https://github.com/SaiyedRushan/extension-copier/issues">Open an issue</a> if you'd like it, or
+                if you want to help build it.
+              </p>
+            </details>
+            <details>
+              <summary>Is this made by Google?</summary>
+              <p>No. It's an independent open source project and isn't affiliated with Google.</p>
+            </details>
+          </div>
+        </section>
+
+        <section>
+          <div class="help">
+            <div>
+              <h2>Help other people find it</h2>
+              <p>
+                Extension Copier is a small open source project. If it saved you some time, a star on GitHub is the
+                easiest way to help. It makes the project easier for other people to find.
+              </p>
+              <p>
+                Found a bug or want something added? Open an issue. Pull requests are welcome, and the README explains how
+                to run it on your Mac.
+              </p>
+            </div>
+            <div class="actions">
+              <a class="button primary" href="https://github.com/SaiyedRushan/extension-copier">
+                <svg viewBox="0 0 16 16" aria-hidden="true" fill="currentColor">
+                  <path d="M8 .25a.75.75 0 01.67.42l1.88 3.8 4.2.61a.75.75 0 01.41 1.28l-3.04 2.96.72 4.18a.75.75 0 01-1.09.79L8 12.32l-3.75 1.97a.75.75 0 01-1.09-.79l.72-4.18L.84 6.36a.75.75 0 01.41-1.28l4.2-.61L7.33.67A.75.75 0 018 .25z" />
+                </svg>
+                Star on GitHub
+                <span class="count" data-stars hidden></span>
+              </a>
+              <a class="button" href="https://github.com/SaiyedRushan/extension-copier/issues/new">Report a bug or ask for a feature</a>
+              <a class="button" href="https://github.com/SaiyedRushan/extension-copier#develop">Run it from the source code</a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer>
+        <p>
+          Made by <a href="https://github.com/SaiyedRushan">Rushanshah Saiyed</a>. Released under the
+          <a href="https://github.com/SaiyedRushan/extension-copier/blob/main/LICENSE">MIT license</a>.
+        </p>
+        <p>Not affiliated with Google. Chrome and Chrome Web Store are trademarks of Google LLC.</p>
+      </footer>
+    </div>
+
+    <script>
+      // Fills in the star count and the latest download from GitHub. Without these,
+      // the page still works: the buttons link to the repo and its releases page.
+      const REPO = "SaiyedRushan/extension-copier";
+
+      fetch(`https://api.github.com/repos/${REPO}`)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((repo) => {
+          const stars = repo && repo.stargazers_count;
+          if (!stars) return;
+          const text = stars >= 1000 ? `${(stars / 1000).toFixed(1).replace(/\.0$/, "")}k` : String(stars);
+          document.querySelectorAll("[data-stars]").forEach((el) => {
+            el.textContent = text;
+            el.hidden = false;
+          });
+        })
+        .catch(() => {});
+
+      fetch(`https://api.github.com/repos/${REPO}/releases/latest`)
+        .then((r) => {
+          if (r.status === 404) return { none: true };
+          return r.ok ? r.json() : null;
+        })
+        .then((release) => {
+          if (!release) return;
+          const button = document.getElementById("download");
+          const label = document.getElementById("download-label");
+          const note = document.getElementById("download-note");
+          const dmg = !release.none && (release.assets || []).find((a) => a.name.endsWith(".dmg"));
+          if (dmg) {
+            const version = String(release.tag_name || "").replace(/^v/, "");
+            const size = Math.max(1, Math.round(dmg.size / 1e6));
+            button.href = dmg.browser_download_url;
+            note.textContent = `Version ${version}, ${size} MB. Free and open source, for macOS 12 or later.`;
+          } else {
+            button.href = `https://github.com/${REPO}#develop`;
+            label.textContent = "No download yet: build it yourself";
+            note.textContent =
+              "The first release isn't out yet. Until it is, you can build the app from the source code on your Mac.";
+          }
+        })
+        .catch(() => {});
+    </script>
+  </body>
+</html>
