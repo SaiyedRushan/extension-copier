@@ -3,7 +3,7 @@ import { api, type CopyResult, type Profile, type SettingsPreview } from "../api
 import { ExtensionIcon } from "../ExtensionIcon";
 import { saveSession, type Session } from "../history";
 import type { FlowItem } from "../installFlow";
-import { loadErrorMessage, plural } from "../messages";
+import { howToQuitChrome, loadErrorMessage, plural } from "../messages";
 
 type Props = {
   session: Session;
@@ -95,8 +95,8 @@ export function SettingsScreen({ session, target, items, backLabel, onBack }: Pr
   const chromeNotice = chromeOpen && (
     <div className="notice">
       <p>
-        <strong>Quit Chrome to continue.</strong> Chrome keeps these files locked while it's open. Click on Chrome and
-        press ⌘Q. This screen notices when it's closed.
+        <strong>Quit Chrome to continue.</strong> Chrome keeps these files locked while it's open. {howToQuitChrome()}{" "}
+        This screen notices when it's closed.
       </p>
     </div>
   );

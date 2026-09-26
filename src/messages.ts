@@ -2,6 +2,24 @@
 
 import { isAppError, type Profile } from "./api";
 
+export type Platform = "mac" | "windows" | "linux";
+
+/** Which system the app is running on, from the web view's user agent. */
+export function currentPlatform(userAgent = navigator.userAgent): Platform {
+  if (/Windows/.test(userAgent)) return "windows";
+  if (/Mac/.test(userAgent)) return "mac";
+  return "linux";
+}
+
+/** How to fully quit Chrome. On Windows, closing the windows can leave it running in the background. */
+export function howToQuitChrome(platform = currentPlatform()): string {
+  return platform === "mac"
+    ? "Click on Chrome and press ⌘Q."
+    : "In Chrome, open the menu (the three dots at the top right) and choose Exit.";
+}
+
+const computerName = (platform = currentPlatform()) => (platform === "mac" ? "this Mac" : "this computer");
+
 export function plural(count: number, one: string, many: string): string {
   return `${count} ${count === 1 ? one : many}`;
 }
@@ -19,7 +37,7 @@ export function loadErrorMessage(error: unknown, profiles: Profile[] = []): stri
   }
   switch (error.kind) {
     case "chromeNotFound":
-      return "Google Chrome isn't set up on this Mac. Install Chrome and open it once, then press Check again.";
+      return `Google Chrome isn't set up on ${computerName()}. Install Chrome and open it once, then press Check again.`;
     case "localStateUnreadable":
       return "Couldn't read Chrome's list of profiles. Quit Chrome, then press Check again.";
     case "prefsUnreadable": {
@@ -34,7 +52,7 @@ export function loadErrorMessage(error: unknown, profiles: Profile[] = []): stri
     case "historyFailed":
       return "Couldn't read your history. Press Check again.";
     case "chromeRunning":
-      return "Chrome is still open. Quit Chrome (press ⌘Q while it's in front), then try again.";
+      return `Chrome is still open. ${howToQuitChrome()} Then try again.`;
     case "settingsCopyFailed":
       return "Couldn't finish copying the settings. Anything that didn't copy was put back as it was. Try again.";
     case "backupNotFound":

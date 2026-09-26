@@ -13,7 +13,6 @@ use serde::{Deserialize, Serialize};
 use std::fs;
 use std::io;
 use std::path::{Path, PathBuf};
-use std::process::{Command, Stdio};
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
 #[serde(rename_all = "camelCase")]
@@ -62,9 +61,11 @@ fn stores(id: &str) -> [String; 4] {
     ]
 }
 
-/// True while Chrome is running on this data folder. Chrome keeps a
-/// `SingletonLock` link there naming its process, e.g. `my-mac.local-48039`.
+/// True while Chrome is running on this data folder. On macOS and Linux, Chrome
+/// keeps a `SingletonLock` link there naming its process, e.g. `my-mac.local-48039`.
+#[cfg(unix)]
 pub fn chrome_running(data_dir: &Path) -> bool {
+    use std::process::{Command, Stdio};
     let Ok(target) = fs::read_link(data_dir.join("SingletonLock")) else {
         return false;
     };
@@ -83,6 +84,29 @@ pub fn chrome_running(data_dir: &Path) -> bool {
         .stderr(Stdio::null())
         .status()
         .is_ok_and(|s| s.success())
+}
+
+/// True while Chrome is running on this data folder. On Windows, Chrome holds a
+/// file called `lockfile` there open with no sharing, so opening it fails while
+/// Chrome runs. If the file is missing, Chrome is closed.
+#[cfg(windows)]
+pub fn chrome_running(data_dir: &Path) -> bool {
+    use std::os::windows::fs::OpenOptionsExt;
+    const ERROR_SHARING_VIOLATION: i32 = 32;
+    let lockfile = data_dir.join("lockfile");
+    if !lockfile.exists() {
+        return false;
+    }
+    match fs::OpenOptions::new()
+        .read(true)
+        .share_mode(0)
+        .open(&lockfile)
+    {
+        Ok(_) => false,
+        Err(e) => {
+            e.raw_os_error() == Some(ERROR_SHARING_VIOLATION) || e.kind() != io::ErrorKind::NotFound
+        }
+    }
 }
 
 /// What copying each extension's settings would involve.
@@ -468,6 +492,7 @@ mod tests {
         assert!(!s.backups().join(&result.backup_id).exists());
     }
 
+    #[cfg(unix)]
     #[test]
     fn refuses_while_chrome_is_open() {
         let s = Sandbox::new("running");
@@ -491,6 +516,7 @@ mod tests {
         );
     }
 
+    #[cfg(unix)]
     #[test]
     fn a_leftover_lock_from_a_crash_doesnt_count_as_running() {
         let s = Sandbox::new("stale");

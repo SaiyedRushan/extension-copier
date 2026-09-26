@@ -25,7 +25,7 @@ fn known_profile(data_dir: &std::path::Path, profile_dir: &str) -> Result<(), Ap
 
 #[tauri::command]
 async fn chrome_installed() -> bool {
-    launch::find_chrome_app().is_some()
+    launch::find_chrome().is_some()
 }
 
 #[tauri::command]
@@ -63,7 +63,7 @@ async fn open_store_pages(profile_dir: String, extension_ids: Vec<String>) -> Re
     }
     let data_dir = data_dir()?;
     known_profile(&data_dir, &profile_dir)?;
-    let app = launch::find_chrome_app().ok_or(AppError::ChromeNotFound)?;
+    let app = launch::find_chrome().ok_or(AppError::ChromeNotFound)?;
     let urls: Vec<String> = extension_ids
         .iter()
         .map(|id| launch::store_url(id))

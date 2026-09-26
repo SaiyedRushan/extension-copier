@@ -38,9 +38,28 @@ pub enum AppError {
 }
 
 /// Chrome's user data folder for the current user.
+#[cfg(target_os = "macos")]
 pub fn default_data_dir() -> Option<PathBuf> {
     let home = std::env::var_os("HOME")?;
     Some(PathBuf::from(home).join("Library/Application Support/Google/Chrome"))
+}
+
+/// Chrome's user data folder for the current user.
+#[cfg(target_os = "windows")]
+pub fn default_data_dir() -> Option<PathBuf> {
+    let local = std::env::var_os("LOCALAPPDATA")?;
+    Some(PathBuf::from(local).join(r"Google\Chrome\User Data"))
+}
+
+/// Chrome's user data folder for the current user. Honors XDG_CONFIG_HOME, as
+/// Chrome does.
+#[cfg(target_os = "linux")]
+pub fn default_data_dir() -> Option<PathBuf> {
+    let config = std::env::var_os("XDG_CONFIG_HOME")
+        .map(PathBuf::from)
+        .filter(|p| p.is_absolute())
+        .or_else(|| std::env::var_os("HOME").map(|h| PathBuf::from(h).join(".config")))?;
+    Some(config.join("google-chrome"))
 }
 
 /// Extension ids are 32 characters from a to p. Checked before an id is used in a

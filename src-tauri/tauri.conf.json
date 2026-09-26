@@ -35,10 +35,16 @@
       "icons/128x128.png",
       "icons/128x128@2x.png",
       "icons/icon.icns",
+      "icons/icon.ico",
       "icons/icon.png"
     ],
     "macOS": {
       "minimumSystemVersion": "12.0"
-    }
+    },
+    "publisher": "Rushanshah Saiyed",
+    "copyright": "Copyright (c) 2026 Rushanshah Saiyed. MIT license.",
+    "shortDescription": "Copy Chrome extensions from one profile to another",
+    "longDescription": "Lists the extensions in each Chrome profile, opens their Chrome Web Store pages in the profile you're copying to, keeps track of what's added, and can copy their saved settings too.",
+    "homepage": "https://saiyedrushan.github.io/extension-copier/"
   }
 }
